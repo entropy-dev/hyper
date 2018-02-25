@@ -23,7 +23,7 @@ class HyperspectralDatasetStreamer:
         :param dataset_id: dataset to load from the database
         """
         self._f = _file(path,'r')
-        self._data = f[self.dataset_id]
+        self._data = self._f[dataset_id]
 
         size = self._data.shape[0]
 
