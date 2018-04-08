@@ -7,14 +7,19 @@ from tqdm import tqdm
 from math import ceil
 import numpy as np
 
-source_dir = '/home/sflorian92/input_data/tmp_extration/nir_2017_05_22/'
-destination_name = '/home/sflorian92/output_data/HyperspectralDataNir20170522.hdf5'
+
+source_dir = '/data/nir_data/2017_05_22/WithSpectralCorrection/PreprocessedImages/'
+destination_name = '/data/nir_data/2017_05_22/WithSpectralCorrection/HyperspectralDataNir20170522.hdf5'
 image_shape = (214, 407, 25) # (254, 510, 15)
 blocksize = 1024*1024*1024 // 8 # 1GB * 15 * 2 ~ 30 GB
 
-"""
+#"""
+
+print('Starting')
+
 filenames = [join(source_dir, name) for name in listdir(source_dir) if name.endswith('.mat')]
 
+print('Found {} files'.format(len(filenames)))
 
 total_pixel_count = len(filenames) * image_shape[0] * image_shape[1]
 destination_file = h5file(destination_name, mode='x', driver=None)
@@ -47,6 +52,7 @@ dataset.flush()
 
 destination_file = h5file(destination_name, mode='r+', driver=None)
 dataset = destination_file['data']
+"""
 total_pixel_count = dataset.shape[0]
 
 # Shuffel the data.
