@@ -1,0 +1,6 @@
+model_checkpoint_path: "/tmp/models/model_ae_tied_complex_loss-26131"
+all_model_checkpoint_paths: "/tmp/models/model_ae_tied_complex_loss-22094"
+all_model_checkpoint_paths: "/tmp/models/model_ae_tied_complex_loss-23096"
+all_model_checkpoint_paths: "/tmp/models/model_ae_tied_complex_loss-24107"
+all_model_checkpoint_paths: "/tmp/models/model_ae_tied_complex_loss-25120"
+all_model_checkpoint_paths: "/tmp/models/model_ae_tied_complex_loss-26131"

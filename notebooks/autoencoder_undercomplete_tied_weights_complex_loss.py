@@ -22,7 +22,7 @@ def autoencoder(graph, dimensions=[784, 512, 256, 64]):
     cost : Tensor
         Overall cost to use for training
     """
-    
+
     with graph.as_default():
 
         # input to the network
@@ -48,9 +48,9 @@ def autoencoder(graph, dimensions=[784, 512, 256, 64]):
 
         # assert suitable respresentation
         with tf.variable_scope("structure_loss"):
-            mean, std = tf.nn.moments(x, [0,1,2])
-            structure_loss = tf.norm(mean) + tf.norm(std-0.25) # std(tanh(norm_pdf)) ~ 0.6
-            
+            mean, std = tf.nn.moments(z, [0])
+            structure_loss = tf.reduce_sum(tf.square(mean)) + tf.reduce_sum(tf.square(std-0.1)) # std(tanh(norm_pdf)) ~ 0.6
+
         encoder.reverse()
 
         # Build the decoder using the same weights
