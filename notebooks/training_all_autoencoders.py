@@ -42,42 +42,36 @@ def get_model(model_id, sizes, graph):
     if model_id is 0:  # tied weights
         ae = autoencoder_undercomplete_tied_weights.autoencoder(graph, sizes)
         tf.summary.scalar('cost', ae['cost'])
-        merged = tf.summary.merge_all()
-        return ae['x'], ae['cost'], merged
+        return ae['x'], ae['cost']
 
     elif model_id is 1:  # tied weights, complex loss
         ae = autoencoder_undercomplete_tied_weights_complex_loss.autoencoder(graph, sizes)
         with tf.variable_scope("overall_loss"):
             structure_loss_rate = 0.02
-            batch_size = tf.shape(ae['x'])[0]
-            balance = tf.Variable(structure_loss_rate, name='structure_loss_rate', trainable=False)
-            wsloss = balance * ae['loss'] * batch_size
+            batch_size = tf.cast(tf.shape(ae['x'])[0], tf.float32)
+            wsloss = structure_loss_rate * ae['loss'] * batch_size
             tf.summary.scalar('structure_loss', wsloss)
             overall_loss = ae['cost'] + wsloss
             tf.summary.scalar('overall_loss', overall_loss)
         tf.summary.scalar('reconstruction_loss', ae["cost"])
-        merged = tf.summary.merge_all()
-        return ae['x'], overall_loss, merged
+        return ae['x'], overall_loss
 
     elif model_id is 2:  # free weights
         ae = autoencoder_undercomplete_free_weights.autoencoder(graph, sizes)
         tf.summary.scalar('cost', ae['cost'])
-        merged = tf.summary.merge_all()
-        return ae['x'], ae['cost'], merged
+        return ae['x'], ae['cost']
 
     elif model_id is 3:  # free weights, complex loss
         ae = autoencoder_undercomplete_free_weights_complex_loss.autoencoder(graph, sizes)
         with tf.variable_scope("overall_loss"):
             structure_loss_rate = 0.02
-            batch_size = tf.shape(ae['x'])[0]
-            balance = tf.Variable(structure_loss_rate, name='structure_loss_rate', trainable=False)
-            wsloss = balance * ae['loss'] * batch_size
+            batch_size = tf.cast(tf.shape(ae['x'])[0], tf.float32)
+            wsloss = structure_loss_rate * ae['loss'] * batch_size
             tf.summary.scalar('structure_loss', wsloss)
             overall_loss = ae['cost'] + wsloss
             tf.summary.scalar('overall_loss', overall_loss)
         tf.summary.scalar('reconstruction_loss', ae["cost"])
-        merged = tf.summary.merge_all()
-        return ae['x'], overall_loss, merged
+        return ae['x'], overall_loss
 
     elif model_id is 4:  # free weights, complex loss, densely connected
         with graph.as_default():
@@ -85,11 +79,10 @@ def get_model(model_id, sizes, graph):
 
             weight_loss_rate = 0.0001
             structure_loss_rate = 0.02
-            batch_size = tf.shape(ae['x'])[0]
+            batch_size = tf.cast(tf.shape(ae['x'])[0], tf.float32)
 
             with tf.variable_scope("overall_loss"):
-                balance = tf.Variable(structure_loss_rate, name='structure_loss_rate', trainable=False)
-                wsloss = balance * ae['loss'] * batch_size
+                wsloss = structure_loss_rate * ae['loss'] * batch_size
                 weight_loss = ae['weights_norm'] * weight_loss_rate
 
                 overall_loss = ae['cost'] + wsloss + weight_loss
@@ -99,9 +92,7 @@ def get_model(model_id, sizes, graph):
                 tf.summary.scalar('reconstruction_loss', ae["cost"])
                 tf.summary.scalar('overall_loss', overall_loss)
 
-            merged = tf.summary.merge_all()
-
-            return ae['x'], overall_loss, merged
+            return ae['x'], overall_loss
     else:
         raise RuntimeError("Unknown model with id: {}".format(model_id))
 
@@ -111,7 +102,7 @@ def get_data(path, test_px):
 
 
 def train(data, graph, model, batch_size, n_epochs, learning_rate, log_path, model_path):
-    model_input, model_loss, model_summary = model
+    model_input, model_loss = model
     makedirs(log_path, exist_ok=True)
     makedirs(dirname(model_path), exist_ok=True)
 
@@ -125,6 +116,7 @@ def train(data, graph, model, batch_size, n_epochs, learning_rate, log_path, mod
             optimizer = tf.train.AdamOptimizer(learning_rate).minimize(model_loss, global_step=global_step)
             saver = tf.train.Saver()
             writer = tf.summary.FileWriter(log_path, graph)
+            model_summary = tf.summary.merge_all()
             tf.global_variables_initializer().run()
             current_time_step = datetime.now()
 

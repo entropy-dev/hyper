@@ -1,10 +1,11 @@
-from training_all_autoencoders import main
-import tensorflow as tf
 import glob
+import os
 import tqdm
+import tensorflow as tf
+from training_all_autoencoders import main
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-#data_paths = ['/data/vis_data/2017_05_22/NoSpectralCorrection', '/data/vis_data/2017_05_22/WithSpectralCorrection']
-data_paths = ['/tmp/data/NoS', '/tmp/data/WithS']
+data_paths = ['/data/vis_data/2017_05_22/NoSpectralCorrection', '/data/vis_data/2017_05_22/WithSpectralCorrection']
 test_px = 0.1
 network_shapes = [[16, 10, 10, 3], [15, 10, 10, 3]]
 batch_size = 150000
@@ -20,7 +21,7 @@ network_id_lut = {
     4: 'free weights_complex_loss_densely_connected',
 }
 
-print('Starting\n\n\n')
+print('\n')
 
 for training_path, training_shape in tqdm.tqdm(list(zip(data_paths, network_shapes)), desc='Training Dataset'):
     for model_id, model_name in tqdm.tqdm(network_id_lut.items(), total=len(network_id_lut), desc='Mode id'):
@@ -39,3 +40,5 @@ for training_path, training_shape in tqdm.tqdm(list(zip(data_paths, network_shap
                  learning_rate=learning_rate,
                  log_path=log_path,
                  model_path=model_path)
+
+print('\n\n\n')

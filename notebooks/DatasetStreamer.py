@@ -49,8 +49,8 @@ class HyperspectralDatasetStreamer:
             idx_1 = start + batchsize * (i + 1)
             yield self._data[idx_0:idx_1]
     
-    def get_train_size():
+    def get_train_size(self):
         return self._train_end - self._train_start
 
-    def get_test_size():
+    def get_test_size(self):
         return self._test_end - self._test_start
