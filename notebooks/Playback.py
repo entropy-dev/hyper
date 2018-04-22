@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 path_in = argv[1]
 postfix = '.bag'
-command = 'rosbag play -q -r 0.5 --clock "{}"'
+command = 'rosbag play -q -r 0.25 --clock "{}"'
 
 try:
     filenames = sorted([join(r, n) for r, _, fs in walk(path_in) for n in fs if n.endswith(postfix)])
