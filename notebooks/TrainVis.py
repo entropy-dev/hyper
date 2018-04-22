@@ -3,7 +3,8 @@ import tensorflow as tf
 import glob
 import tqdm
 
-data_paths = ['/data/vis_data/2017_05_22/NoSpectralCorrection', '/data/vis_data/2017_05_22/WithSpectralCorrection']
+#data_paths = ['/data/vis_data/2017_05_22/NoSpectralCorrection', '/data/vis_data/2017_05_22/WithSpectralCorrection']
+data_paths = ['/tmp/data/NoS', '/tmp/data/WithS']
 test_px = 0.1
 network_shapes = [[16, 10, 10, 3], [15, 10, 10, 3]]
 batch_size = 150000

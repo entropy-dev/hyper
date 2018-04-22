@@ -5,9 +5,14 @@ from os.path import dirname
 
 import numpy as np
 import tensorflow as tf
-from DatasetStreamer import HyperspectralDatasetStreamer
-import densely_connected_autoencoder_undercomplete_tied_weights_complex_loss
 from tqdm import tqdm
+
+import autoencoder_undercomplete_free_weights
+import autoencoder_undercomplete_free_weights_complex_loss
+import autoencoder_undercomplete_tied_weights
+import autoencoder_undercomplete_tied_weights_complex_loss
+import densely_connected_autoencoder_undercomplete_tied_weights_complex_loss
+from DatasetStreamer import HyperspectralDatasetStreamer
 
 
 def get_inputs():
@@ -35,16 +40,48 @@ def get_inputs():
 
 def get_model(model_id, sizes, graph):
     if model_id is 0:  # tied weights
-        pass
+        ae = autoencoder_undercomplete_tied_weights.autoencoder(graph, sizes)
+        tf.summary.scalar('cost', ae['cost'])
+        merged = tf.summary.merge_all()
+        return ae['x'], ae['cost'], merged
+
     elif model_id is 1:  # tied weights, complex loss
-        pass
+        ae = autoencoder_undercomplete_tied_weights_complex_loss.autoencoder(graph, sizes)
+        with tf.variable_scope("overall_loss"):
+            structure_loss_rate = 0.02
+            batch_size = tf.shape(ae['x'])[0]
+            balance = tf.Variable(structure_loss_rate, name='structure_loss_rate', trainable=False)
+            wsloss = balance * ae['loss'] * batch_size
+            tf.summary.scalar('structure_loss', wsloss)
+            overall_loss = ae['cost'] + wsloss
+            tf.summary.scalar('overall_loss', overall_loss)
+        tf.summary.scalar('reconstruction_loss', ae["cost"])
+        merged = tf.summary.merge_all()
+        return ae['x'], overall_loss, merged
+
     elif model_id is 2:  # free weights
-        pass
+        ae = autoencoder_undercomplete_free_weights.autoencoder(graph, sizes)
+        tf.summary.scalar('cost', ae['cost'])
+        merged = tf.summary.merge_all()
+        return ae['x'], ae['cost'], merged
+
     elif model_id is 3:  # free weights, complex loss
-        pass
+        ae = autoencoder_undercomplete_free_weights_complex_loss.autoencoder(graph, sizes)
+        with tf.variable_scope("overall_loss"):
+            structure_loss_rate = 0.02
+            batch_size = tf.shape(ae['x'])[0]
+            balance = tf.Variable(structure_loss_rate, name='structure_loss_rate', trainable=False)
+            wsloss = balance * ae['loss'] * batch_size
+            tf.summary.scalar('structure_loss', wsloss)
+            overall_loss = ae['cost'] + wsloss
+            tf.summary.scalar('overall_loss', overall_loss)
+        tf.summary.scalar('reconstruction_loss', ae["cost"])
+        merged = tf.summary.merge_all()
+        return ae['x'], overall_loss, merged
+
     elif model_id is 4:  # free weights, complex loss, densely connected
         with graph.as_default():
-            ae = densely_connected_autoencoder_undercomplete_tied_weights_complex_loss.autoencoder(g, sizes)
+            ae = densely_connected_autoencoder_undercomplete_tied_weights_complex_loss.autoencoder(graph, sizes)
 
             weight_loss_rate = 0.0001
             structure_loss_rate = 0.02
@@ -58,7 +95,7 @@ def get_model(model_id, sizes, graph):
                 overall_loss = ae['cost'] + wsloss + weight_loss
 
                 tf.summary.scalar('weight_loss', weight_loss)
-                tf.summary.scalar('structur_loss', wsloss)
+                tf.summary.scalar('structure_loss', wsloss)
                 tf.summary.scalar('reconstruction_loss', ae["cost"])
                 tf.summary.scalar('overall_loss', overall_loss)
 
@@ -119,6 +156,7 @@ def train(data, graph, model, batch_size, n_epochs, learning_rate, log_path, mod
                 result = [sess.run(model_loss, feed_dict={model_input: norm(x)}) for x in data.test_epoch(batch_size)]
                 overall_test_loss = sum(result) / (len(result) * batch_size)
 
+
 def main(data_path, test_px, network_shape, network_id, batch_size, epochs, learning_rate, log_path, model_path):
     g = tf.Graph()
     n = get_model(network_id, network_shape, g)
@@ -130,6 +168,6 @@ if __name__ == '__main__':
     inputs = get_inputs()
     ae_shape = [int(i) for i in inputs.shape.split(',')]
 
-    main(data_path=inputs.dataset, test_px=inputs.test,network_shape=ae_shape, network_id=inputs.autoencoder_id,
+    main(data_path=inputs.dataset, test_px=inputs.test, network_shape=ae_shape, network_id=inputs.autoencoder_id,
          batch_size=inputs.batch_size, epochs=inputs.epochs, learning_rate=inputs.learning_rate,
          log_path=inputs.log_path, model_path=inputs.model_path)
